@@ -8,7 +8,7 @@
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Войти</button>
+        <button type="submit"><a href="{% url 'profile' %}">Войти</a></button>
     </form>
     {% if form.errors %}
         <p>Пожалуйста, исправьте ошибки</p>

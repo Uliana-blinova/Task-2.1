@@ -1,0 +1,20 @@
+<!-- templates/main/profile.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Личный кабинет</title>
+</head>
+<body>
+    <h1>Личный кабинет</h1>
+
+    <p>Привет, {{ user.first_name|default:user.username }}!</p>
+    <p>Email: {{ user.email }}</p>
+
+    <a href="{% url 'logout' %}">Выход</a>
+    <a href="{% url 'home' %}">Главная</a>
+
+
+    <p>Здесь будут отображаться ваши заявки, когда вы их создадите.</p>
+</body>
+</html>
