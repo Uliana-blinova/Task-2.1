@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Вход</title>
+</head>
+<body>
+    <h2>Вход</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Войти</button>
+    </form>
+    {% if form.errors %}
+        <p>Пожалуйста, исправьте ошибки</p>
+    {% endif %}
+    <p><a href="{% url 'register' %}">Регистрация</a></p>
+</body>
+</html>
