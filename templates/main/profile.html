@@ -1,20 +1,13 @@
-<!-- templates/main/profile.html -->
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Личный кабинет</title>
-</head>
-<body>
+{% extends 'main/base.html' %}
+
+{% block title %}Личный кабинет - Design.pro{% endblock %}
+
+{% block content %}
     <h1>Личный кабинет</h1>
 
     <p>Привет, {{ user.first_name }}!</p>
     <p>Email: {{ user.email }}</p>
 
-    <a href="{% url 'logout' %}">Выход</a>
-    <a href="{% url 'home' %}">Главная</a>
-
-
     <p>Здесь будут отображаться ваши заявки, когда вы их создадите.</p>
-</body>
-</html>
+{% endblock %}

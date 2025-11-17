@@ -1,19 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>«Design.pro» - Главная</title>
-</head>
-<body>
+{% extends 'main/base.html' %}
+
+{% block title %}Главная - Design.pro{% endblock %}
+
+{% block content %}
     <h1>Добро пожаловать в Design.pro!</h1>
     <p>Студия по созданию и оформлению интерьеров.</p>
-
-    {% if user.is_authenticated %}
-        <p>Привет, {{ user.first_name|default:user.username }}!</p>
-        <a href="{% url 'profile' %}">Личный кабинет</a> |
-        <a href="{% url 'logout' %}">Выйти</a>
-    {% else %}
-        <a href="{% url 'login' %}">Войти</a> |
-        <a href="{% url 'register' %}">Регистрация</a>
-    {% endif %}
-</body>
-</html>
+{% endblock %}

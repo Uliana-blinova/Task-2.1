@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Вход</title>
-</head>
-<body>
+{% extends 'main/base.html' %}
+
+{% block title %}Вход - Design.pro{% endblock %}
+
+{% block content %}
     <h2>Вход</h2>
     <form method="post">
         {% csrf_token %}
@@ -13,6 +12,4 @@
     {% if form.errors %}
         <p>Пожалуйста, исправьте ошибки</p>
     {% endif %}
-    <p><a href="{% url 'register' %}">Регистрация</a></p>
-</body>
-</html>
+{% endblock %}
