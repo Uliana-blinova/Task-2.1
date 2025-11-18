@@ -1,9 +1,6 @@
 
 from django import forms
 from .models import Application, Category
-
-# main/forms.py
-from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -84,6 +81,7 @@ class ApplicationForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'category': forms.Select(attrs={'class': 'form-control'}),
             'photo': forms.FileInput(attrs={'class': 'form-control'}),
+
         }
 
     def clean_photo(self):

@@ -259,3 +259,17 @@ h1, h2 {
     display:flex;
     justify-content: center;
 }
+.filters {
+    margin-bottom: 20px;
+}
+
+.filters label {
+    margin-right: 10px;
+}
+
+#status-filter {
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}

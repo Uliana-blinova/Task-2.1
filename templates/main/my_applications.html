@@ -6,14 +6,26 @@
     <div class="container">
         <div class="main-content">
             <h2>📌 Мои заявки</h2>
-            <a href="{% url 'create_application' %}" class="btn-create"> Создать новую заявку</a>
+            <a href="{% url 'create_application' %}" class="btn-create">Создать новую заявку</a>
+
+            <div class="filters">
+                <form method="get" style="display: inline;">
+                    <label for="status-filter">Фильтр по статусу:</label>
+                    <select name="status" id="status-filter" onchange="this.form.submit();">
+                        <option value="" {% if not selected_status %}selected{% endif %}>Все</option>
+                        <option value="Новая" {% if is_new_selected %}selected{% endif %}>Новая</option>
+                        <option value="Принято в работе" {% if is_in_progress_selected %}selected{% endif %}>Принято в работу</option>
+                        <option value="Выполнено" {% if is_completed_selected %}selected{% endif %}>Выполнено</option>
+                    </select>
+                </form>
+            </div>
 
             {% if applications %}
                 <div class="applications-list">
                     {% for app in applications %}
                         <div class="application-card">
                             <div class="card-header">
-                                <span class="status-badge status-{{ app.status|slugify }}">
+                                <span class="status-badge status-{{ app.status}}">
                                     {{ app.status }}
                                 </span>
                                 <span class="timestamp">{{ app.created_at|date:"d.m.Y H:i" }}</span>
@@ -37,10 +49,22 @@
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="no-applications">
-                    <p>У вас пока нет заявок.</p>
-                    <a href="{% url 'create_application' %}" class="btn-create">Создать первую заявку</a>
-                </div>
+                {% if selected_status and selected_status in 'Принято в работе,Выполнено' %}
+                    <div class="no-applications">
+                        <p>Таких заявок нет.</p>
+                        <a href="{% url 'create_application' %}" class="btn-create">Создать заявку</a>
+                    </div>
+                {% elif selected_status %}
+                    <div class="no-applications">
+                        <p>У вас пока нет заявок с этим статусом.</p>
+                        <a href="{% url 'create_application' %}" class="btn-create">Создать заявку</a>
+                    </div>
+                {% else %}
+                    <div class="no-applications">
+                        <p>У вас пока нет заявок.</p>
+                        <a href="{% url 'create_application' %}" class="btn-create">Создать первую заявку</a>
+                    </div>
+                {% endif %}
             {% endif %}
         </div>
     </div>
