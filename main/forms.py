@@ -70,7 +70,6 @@ class CustomUserCreationForm(UserCreationForm):
         user = super().save(commit=False)
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
-        # Отчество не сохраняется в User, но можно сохранить в профиль
         user.email = self.cleaned_data['email']
         if commit:
             user.save()
@@ -90,13 +89,11 @@ class ApplicationForm(forms.ModelForm):
     def clean_photo(self):
         photo = self.cleaned_data.get('photo')
         if photo:
-            # Проверка формата
             import os
             ext = os.path.splitext(photo.name)[1].lower()
             valid_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
             if ext not in valid_extensions:
                 raise forms.ValidationError('Файл должен быть в формате JPG, JPEG, PNG или BMP.')
-            # Проверка размера (2 Мб)
             if photo.size > 2 * 1024 * 1024:
                 raise forms.ValidationError('Файл не должен превышать 2 МБ.')
         return photo

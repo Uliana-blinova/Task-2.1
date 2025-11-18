@@ -11,7 +11,7 @@ def home(request):
         status='Выполнено'
     ).order_by('-created_at')[:4]
 
-    # Счётчик заявок со статусом "Принято в работу"
+
     in_progress_count = Application.objects.filter(
         status='Принято в работу'
     ).count()
@@ -57,7 +57,6 @@ def create_application(request):
             return redirect('my_applications')
     else:
         form = ApplicationForm()
-    pass
     return render(request, 'main/create_application.html', {'form': form})
 
 
