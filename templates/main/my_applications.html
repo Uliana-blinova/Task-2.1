@@ -3,28 +3,45 @@
 {% block title %}Мои заявки - Design.pro{% endblock %}
 
 {% block content %}
-    <h2>Мои заявки</h2>
-    <a href="{% url 'create_application' %}">Создать новую заявку</a>
-    {% if applications %}
-        <ul>
-        {% for app in applications %}
-            <li>
-                <strong>{{ app.title }}</strong> ({{ app.status }}) - {{ app.created_at }}
-                <br>
-                {{ app.description }}
-                <br>
-                Категория: {{ app.category }}
-                {% if app.photo %}
-                    <br>
-                    <img src="{{ app.photo.url }}" alt="Фото помещения" width="200">
-                {% endif %}
-                {% if app.status == 'Новая' %}
-                    <a href="{% url 'delete_application' app.pk %}">Удалить</a>
-                {% endif %}
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>У вас пока нет заявок.</p>
-    {% endif %}
+    <div class="container">
+        <div class="main-content">
+            <h2>📌 Мои заявки</h2>
+            <a href="{% url 'create_application' %}" class="btn-create">➕ Создать новую заявку</a>
+
+            {% if applications %}
+                <div class="applications-list">
+                    {% for app in applications %}
+                        <div class="application-card">
+                            <div class="card-header">
+                                <span class="status-badge status-{{ app.status|slugify }}">
+                                    {{ app.status }}
+                                </span>
+                                <span class="timestamp">{{ app.created_at|date:"d.m.Y H:i" }}</span>
+                            </div>
+                            <div class="card-body">
+                                <h3>{{ app.title }}</h3>
+                                <p>{{ app.description|truncatewords:20 }}</p>
+                                <p><strong>Категория:</strong> {{ app.category }}</p>
+                                {% if app.photo %}
+                                    <div class="photo-container">
+                                        <img src="{{ app.photo.url }}" alt="Фото помещения" width="200">
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer">
+                                {% if app.status == 'Новая' %}
+                                    <a href="{% url 'delete_application' app.pk %}" class="btn-delete">🗑️ Удалить</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-applications">
+                    <p>У вас пока нет заявок.</p>
+                    <a href="{% url 'create_application' %}" class="btn-create">Создать первую заявку</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}
