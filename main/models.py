@@ -1,3 +1,4 @@
+# main/models.py
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -11,17 +12,18 @@ class Application(models.Model):
     STATUS_CHOICES = [
         ('Новая', 'Новая'),
         ('Принято в работу', 'Принято в работу'),
-        ('Выполнено', 'Выполнено')
+        ('Выполнено', 'Выполнено'),
     ]
+
     title = models.CharField(max_length=200)
     description = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     photo = models.ImageField(upload_to='applications/', null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Новая')
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    design_image = models.ImageField(upload_to='designs/', null=True, blank=True)
-    comment = models.TextField(blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # Владелец заявки
+    design_image = models.ImageField(upload_to='designs/', null=True, blank=True)  # Для администратора
+    comment = models.TextField(blank=True, null=True)  # Для администратора
 
-def __str__(self):
+    def __str__(self):
         return self.title

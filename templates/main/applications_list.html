@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Заявки</title>
+</head>
+<body>
+    <h1>Заявки</h1>
+    <ul>
+        {% for app in applications %}
+            <li>
+                <p><strong>Статус:</strong> {{ app.status }}</p>
+                <p><strong>Название:</strong> {{ app.title }}</p>
+                <p><strong>Категория:</strong> {{ app.category.name }}</p>
+                <p><strong>Дата:</strong> {{ app.timestamp }}</p>
+                {% if app.photo %}
+                    <img src="{{ app.photo.url }}" alt="Фото заявки" width="200">
+                {% endif %}
+            </li>
+        {% empty %}
+            <li>Нет заявок.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'home' %}">На главную</a>
+</body>
+</html>

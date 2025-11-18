@@ -3,6 +3,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 
+
 urlpatterns = [
     path('', views.home, name='home'),
     path('accounts/login/', auth_views.LoginView.as_view(template_name='main/login.html'), name='login'),
@@ -12,4 +13,5 @@ urlpatterns = [
     path('create-application/', views.create_application, name='create_application'),
     path('my-applications/', views.my_applications, name='my_applications'),
     path('delete-application/<int:pk>/', views.delete_application, name='delete_application'),
+    path('filter/', views.filter_applications, name='filter_applications'),
 ]

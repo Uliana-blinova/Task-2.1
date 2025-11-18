@@ -5,4 +5,26 @@
 {% block content %}
     <h1>Добро пожаловать в Design.pro!</h1>
     <p>Студия по созданию и оформлению интерьеров.</p>
+
+    <h2>Количество заявок в работе: {{ in_progress_count }}</h2>
+
+    <h3>Последние выполненные заявки:</h3>
+    <ul>
+        {% for app in completed_applications %}
+            <li>
+                <p><strong>Дата:</strong> {{ app.created_at }}</p>
+                <p><strong>Название:</strong> {{ app.title }}</p>
+                <p><strong>Категория:</strong> {{ app.category.name }}</p>
+                {% if app.photo %}
+                    <img src="{{ app.photo.url }}" alt="Фото заявки" width="200">
+                {% endif %}
+            </li>
+        {% empty %}
+            <li>Нет выполненных заявок.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'filter_applications' %}?status=Новая">Показать только новые заявки</a>
+</body>
+</html>
 {% endblock %}

@@ -1,15 +1,28 @@
-
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login
-from .forms import CustomUserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import login
-from .forms import CustomUserCreationForm, ApplicationForm
 from django.contrib import messages
-from .models import Application
+from .forms import CustomUserCreationForm, ApplicationForm
+from .models import Application, Category
+
 def home(request):
-    return render(request, 'main/home.html')
+    completed_applications = Application.objects.filter(
+        status='Выполнено'
+    ).order_by('-created_at')[:4]
+
+    # Счётчик заявок со статусом "Принято в работу"
+    in_progress_count = Application.objects.filter(
+        status='Принято в работу'
+    ).count()
+
+    context = {
+        'completed_applications': completed_applications,
+        'in_progress_count': in_progress_count,
+    }
+    return render(request, 'main/home.html', context)
+
+
 
 def register(request):
     if request.method == 'POST':
@@ -21,10 +34,6 @@ def register(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'main/register.html', {'form': form})
-
-@login_required
-def profile(request):
-    return render(request, 'main/profile.html')
 
 class CustomLoginView(LoginView):
     template_name = 'main/login.html'
@@ -48,7 +57,9 @@ def create_application(request):
             return redirect('my_applications')
     else:
         form = ApplicationForm()
+    pass
     return render(request, 'main/create_application.html', {'form': form})
+
 
 @login_required
 def my_applications(request):
@@ -69,4 +80,10 @@ def delete_application(request, pk):
         return redirect('my_applications')
 
     return render(request, 'main/delete_application.html', {'application': app})
-#проверка работы коммита
+
+def filter_applications(request):
+    status = request.GET.get('status')
+    applications = Application.objects.all()
+    if status:
+        applications = applications.filter(status=status)
+    return render(request, 'main/applications_list.html', {'applications': applications})
