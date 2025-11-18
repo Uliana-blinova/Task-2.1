@@ -1,35 +1,30 @@
+<!-- base.html (правильно) -->
 <!DOCTYPE html>
 <html>
-<head>
-    <title>{% block title %}Design.pro{% endblock %}</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'main/style.css' %}">
-</head>
+<head>...</head>
 <body>
-    <div class="container">
-        <aside class="sidebar">
+    <nav>
+        <ul>
             {% if user.is_authenticated %}
                 {% if user.is_superuser %}
-                    <li><a href="{% url 'admin:index' %}">Админ-панель Django</a></li>
+                    <!-- Меню для СУПЕРПОЛЬЗОВАТЕЛЯ (Администратора) -->
                     <li><a href="{% url 'manage_categories' %}">Управление категориями</a></li>
-                    <li><a href="{% url 'view_all_applications_admin' %}">Изменить статус заявок</a></li> <!-- Новый URL -->
+                    <li><a href="{% url 'view_all_applications_admin' %}">Изменить статус заявок</a></li>
                 {% else %}
-                <h3>Привет, {{ user.first_name }}!</h3>
-                <a href="{% url 'profile' %}">Профиль</a>
-                <a href="{% url 'home' %}">Главная</a>
-                <a href="{% url 'my_applications' %}">Мои заявки</a>
-                <a href="{% url 'create_application' %}">Создать заявку</a>
-                <a href="{% url 'logout' %}">Выйти</a>
+                    <!-- Меню для ОБЫЧНОГО ЗАРЕГИСТРИРОВАННОГО ПОЛЬЗОВАТЕЛЯ -->
+                    <li><a href="{% url 'my_applications' %}">Мои заявки</a></li>
+                    <li><a href="{% url 'create_application' %}">Создать заявку</a></li>
+                {% endif %} <!-- Закрывает {% if user.is_superuser %} -->
+                <!-- НЕТ НУЖДЫ В ДОПОЛНИТЕЛЬНОМ {% endif %} ЗДЕСЬ -->
             {% else %}
-                <h3>Гость</h3>
-                <a href="{% url 'login' %}">Войти</a>
-                <a href="{% url 'register' %}">Регистрация</a>
-            {% endif %}
-        </aside>
-        <main class="main-content">
-            {% block content %}
-            {% endblock %}
-        </main>
-    </div>
+                <!-- Меню для НЕАВТОРИЗОВАННОГО ПОЛЬЗОВАТЕЛЯ -->
+                <li><a href="{% url 'login' %}">Войти</a></li>
+                <li><a href="{% url 'register' %}">Зарегистрироваться</a></li>
+            {% endif %} <!-- Закрывает {% if user.is_authenticated %} -->
+        </ul>
+    </nav>
+
+    {% block content %}{% endblock %}
+
 </body>
 </html>

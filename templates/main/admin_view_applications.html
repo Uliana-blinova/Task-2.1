@@ -1,0 +1,69 @@
+<!-- admin_view_applications.html -->
+{% extends 'main/base.html' %}
+
+{% block title %}Админ: Изменить статус заявок - Design.pro{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="main-content">
+            <h2>📋 Админ: Все заявки</h2>
+
+            <!-- Формы для фильтрации (опционально) -->
+            <div class="filters">
+                <form method="get" style="display: inline;">
+                    <label for="status-filter">Фильтр по статусу:</label>
+                    <select name="status_filter" id="status-filter" onchange="this.form.submit();">
+                        <option value="" {% if not selected_status_filter %}selected{% endif %}>Все</option>
+                        <option value="Новая" {% if selected_status_filter == 'Новая' %}selected{% endif %}>Новая</option>
+                        <option value="Принято в работе" {% if selected_status_filter == 'Принято в работе' %}selected{% endif %}>Принято в работу</option>
+                        <option value="Выполнено" {% if selected_status_filter == 'Выполнено' %}selected{% endif %}>Выполнено</option>
+                    </select>
+                </form>
+            </div>
+
+            {% if applications %}
+                <div class="applications-list">
+                    {% for app in applications %}
+                        <div class="application-card">
+                            <div class="card-header">
+                                <span class="status-badge status-{{ app.status|slugify }}">
+                                    {{ app.status }}
+                                </span>
+                                <span class="timestamp">{{ app.created_at|date:"d.m.Y H:i" }}</span>
+                            </div>
+                            <div class="card-body">
+                                <h3>{{ app.title }}</h3>
+                                <p>{{ app.description|truncatewords:20 }}</p>
+                                <p><strong>Категория:</strong> {{ app.category.name }}</p>
+                                <p><strong>Пользователь:</strong> {{ app.user.username }}</p>
+                                {% if app.photo %}
+                                    <div class="photo-container">
+                                        <img src="{{ app.photo.url }}" alt="Фото помещения" width="200">
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer">
+                                <!-- Форма для смены статуса админом -->
+                                <form method="post" action="{% url 'view_all_applications_admin' %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="application_id" value="{{ app.id }}">
+                                    <select name="status" required>
+                                        <option value="">Сменить статус...</option>
+                                        <option value="Новая" {% if app.status == 'Новая' %}selected{% endif %}>Новая</option>
+                                        <option value="Принято в работу" {% if app.status == 'Принято в работе' %}selected{% endif %}>Принято в работу</option>
+                                        <option value="Выполнено" {% if app.status == 'Выполнено' %}selected{% endif %}>Выполнено</option>
+                                    </select>
+                                    <button type="submit" class="btn-change-status">Изменить статус</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="no-applications">
+                    <p>Заявок нет.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
