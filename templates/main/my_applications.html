@@ -49,7 +49,7 @@
                     {% endfor %}
                 </div>
             {% else %}
-                {% if selected_status and selected_status in 'Принято в работе,Выполнено' %}
+                {% if selected_status == 'Принято в работе' or selected_status == 'Выполнено' %}
                     <div class="no-applications">
                         <p>Таких заявок нет.</p>
                         <a href="{% url 'create_application' %}" class="btn-create">Создать заявку</a>
