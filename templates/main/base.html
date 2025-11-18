@@ -9,6 +9,11 @@
     <div class="container">
         <aside class="sidebar">
             {% if user.is_authenticated %}
+                {% if user.is_superuser %}
+                    <li><a href="{% url 'admin:index' %}">Админ-панель Django</a></li>
+                    <li><a href="{% url 'manage_categories' %}">Управление категориями</a></li>
+                    <li><a href="{% url 'view_all_applications_admin' %}">Изменить статус заявок</a></li> <!-- Новый URL -->
+                {% else %}
                 <h3>Привет, {{ user.first_name }}!</h3>
                 <a href="{% url 'profile' %}">Профиль</a>
                 <a href="{% url 'home' %}">Главная</a>

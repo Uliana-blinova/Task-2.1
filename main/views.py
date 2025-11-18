@@ -103,3 +103,88 @@ def filter_applications(request):
     if status:
         applications = applications.filter(status=status)
     return render(request, 'main/applications_list.html', {'applications': applications})
+# views.py
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from django.contrib.auth.models import User
+from .models import Application, Category
+
+# Проверка, является ли пользователь суперпользователем
+def is_superuser(user):
+    return user.is_superuser
+
+@login_required
+@user_passes_test(is_superuser) # Только суперпользователи
+def view_all_applications_admin(request):
+    """
+    Представление для администратора: просмотр и изменение статуса всех заявок.
+    """
+    applications = Application.objects.select_related('user', 'category').all() # Оптимизация: подгружаем связанные объекты
+
+    if request.method == 'POST':
+        application_id = request.POST.get('application_id')
+        new_status = request.POST.get('status')
+
+        if new_status in ['Новая', 'Принято в работу', 'Выполнено']:
+            app_to_update = get_object_or_404(Application, id=application_id)
+            old_status = app_to_update.status
+            app_to_update.status = new_status
+            app_to_update.save()
+            messages.success(request, f'Статус заявки "{app_to_update.title}" изменён с "{old_status}" на "{new_status}".')
+        else:
+            messages.error(request, 'Недопустимый статус.')
+
+        # После обработки POST возвращаемся к списку
+        # (Важно: не используем redirect после POST, чтобы сообщения сохранились)
+        # Можно просто перезагрузить страницу с обновленными данными
+        # или обновить список в представлении и снова отрендерить шаблон.
+        # В простейшем случае - просто отображаем список снова.
+        # Django messages автоматически отобразятся при следующем рендере.
+
+    # Фильтрация (опционально)
+    status_filter = request.GET.get('status_filter')
+    if status_filter:
+        applications = applications.filter(status=status_filter)
+
+    categories = Category.objects.all() # Для фильтра по категориям (опционально)
+    users = User.objects.all() # Для фильтра по пользователю (опционально)
+
+    context = {
+        'applications': applications,
+        'categories': categories,
+        'users': users,
+        'selected_status_filter': status_filter,
+    }
+    return render(request, 'main/admin_view_applications.html', context)
+
+# Представление для управления категориями (уже есть, но убедимся, что оно защищено)
+@login_required
+@user_passes_test(is_superuser) # Только суперпользователи
+def manage_categories(request):
+    categories = Category.objects.all()
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'add':
+            name = request.POST.get('name')
+            if name:
+                if Category.objects.filter(name=name).exists():
+                    messages.error(request, f'Категория "{name}" уже существует.')
+                else:
+                    Category.objects.create(name=name)
+                    messages.success(request, f'Категория "{name}" добавлена.')
+            else:
+                messages.error(request, 'Название категории не может быть пустым.')
+
+        elif action == 'delete':
+            category_id = request.POST.get('category_id')
+            category = get_object_or_404(Category, id=category_id)
+            category.delete() # Учитывайте CASCADE
+            messages.success(request, f'Категория "{category.name}" удалена.')
+
+    return render(request, 'main/manage_categories.html', {'categories': categories})
+
+# Не забудьте добавить представление для смены статуса (если хотите отдельный POST-эндпоинт)
+# Но в примере ниже статус меняется в том же представлении view_all_applications_admin
