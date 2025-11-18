@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from .models import Application, Category
 
 def validate_cyrillic(value):
     import re
@@ -69,3 +70,28 @@ class CustomUserCreationForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+class ApplicationForm(forms.ModelForm):
+    class Meta:
+        model = Application
+        fields = ['title', 'description', 'category', 'photo']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'photo': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean_photo(self):
+        photo = self.cleaned_data.get('photo')
+        if photo:
+            # Проверка формата
+            import os
+            ext = os.path.splitext(photo.name)[1].lower()
+            valid_extensions = ['.jpg', '.jpeg', '.png', '.bmp']
+            if ext not in valid_extensions:
+                raise forms.ValidationError('Файл должен быть в формате JPG, JPEG, PNG или BMP.')
+            # Проверка размера (2 Мб)
+            if photo.size > 2 * 1024 * 1024:
+                raise forms.ValidationError('Файл не должен превышать 2 МБ.')
+        return photo
