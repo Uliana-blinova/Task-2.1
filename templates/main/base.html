@@ -1,14 +1,12 @@
+
 <!DOCTYPE html>
 <html>
-<head>
-    <title>{% block title %}Design.pro{% endblock %}</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'main/style.css' %}">
-</head>
+<head>...</head>
 <body>
-    <div class="container">
-        <aside class="sidebar">
+    <nav>
+        <ul>
             {% if user.is_authenticated %}
+
                 <h3>Привет, {{ user.first_name|default:user.username }}!</h3>
                 {% if user.is_superuser %}
                     <a href="{% url 'home' %}">Главная</a>
@@ -34,5 +32,26 @@
             {% endblock %}
         </main>
     </div>
+
+                {% if user.is_superuser %}
+
+                    <li><a href="{% url 'manage_categories' %}">Управление категориями</a></li>
+                    <li><a href="{% url 'view_all_applications_admin' %}">Изменить статус заявок</a></li>
+                {% else %}
+
+                    <li><a href="{% url 'my_applications' %}">Мои заявки</a></li>
+                    <li><a href="{% url 'create_application' %}">Создать заявку</a></li>
+                {% endif %} >
+
+            {% else %}
+
+                <li><a href="{% url 'login' %}">Войти</a></li>
+                <li><a href="{% url 'register' %}">Зарегистрироваться</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    {% block content %}{% endblock %}
+
 </body>
 </html>

@@ -18,4 +18,8 @@ urlpatterns = [
     path('admin-categories/', views.admin_categories, name='admin_categories'),
     path('create-category/', views.create_category, name='create_category'),
     path('delete-category/<int:pk>/', views.delete_category, name='delete_category'),
+    path('manage_categories/', views.manage_categories, name='manage_categories'), # Теперь только для админа
+    path('admin/change_app_status/', views.view_all_applications_admin, name='view_all_applications_admin'), # Новый URL для админа
+    # path('admin/change_status/', views.admin_change_status, name='admin_change_status'), # Опционально, если отдельный эндпоинт
 ]
+

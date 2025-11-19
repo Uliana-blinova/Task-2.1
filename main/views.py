@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
@@ -172,3 +173,75 @@ def delete_category(request, pk):
         category.delete()
         messages.success(request, 'Категория и все её заявки успешно удалены.')
     return redirect('admin_categories')
+
+
+
+def is_superuser(user):
+    return user.is_superuser
+
+@login_required
+@user_passes_test(is_superuser) # Только суперпользователи
+def view_all_applications_admin(request):
+    """
+    Представление для администратора: просмотр и изменение статуса всех заявок.
+    """
+    applications = Application.objects.select_related('user', 'category').all() # Оптимизация: подгружаем связанные объекты
+
+    if request.method == 'POST':
+        application_id = request.POST.get('application_id')
+        new_status = request.POST.get('status')
+
+        if new_status in ['Новая', 'Принято в работу', 'Выполнено']:
+            app_to_update = get_object_or_404(Application, id=application_id)
+            old_status = app_to_update.status
+            app_to_update.status = new_status
+            app_to_update.save()
+            messages.success(request, f'Статус заявки "{app_to_update.title}" изменён с "{old_status}" на "{new_status}".')
+        else:
+            messages.error(request, 'Недопустимый статус.')
+
+
+    status_filter = request.GET.get('status_filter')
+    if status_filter:
+        applications = applications.filter(status=status_filter)
+
+    categories = Category.objects.all()
+    users = User.objects.all()
+
+    context = {
+        'applications': applications,
+        'categories': categories,
+        'users': users,
+        'selected_status_filter': status_filter,
+    }
+    return render(request, 'main/admin_view_applications.html', context)
+
+
+@login_required
+@user_passes_test(is_superuser) # Только суперпользователи
+def manage_categories(request):
+    categories = Category.objects.all()
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'add':
+            name = request.POST.get('name')
+            if name:
+                if Category.objects.filter(name=name).exists():
+                    messages.error(request, f'Категория "{name}" уже существует.')
+                else:
+                    Category.objects.create(name=name)
+                    messages.success(request, f'Категория "{name}" добавлена.')
+            else:
+                messages.error(request, 'Название категории не может быть пустым.')
+
+        elif action == 'delete':
+            category_id = request.POST.get('category_id')
+            category = get_object_or_404(Category, id=category_id)
+            category.delete() # Учитывайте CASCADE
+            messages.success(request, f'Категория "{category.name}" удалена.')
+
+    return render(request, 'main/manage_categories.html', {'categories': categories})
+
+
