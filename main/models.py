@@ -10,9 +10,9 @@ class Category(models.Model):
 
 class Application(models.Model):
     STATUS_CHOICES = [
-        ('Новая', 'Новая'),
-        ('Принято в работу', 'Принято в работу'),
-        ('Выполнено', 'Выполнено'),
+        ('new', 'Новая'),
+        ('in_progress', 'Принято в работу'),
+        ('completed', 'Выполнено'),
     ]
 
     title = models.CharField(max_length=200)

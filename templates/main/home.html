@@ -9,13 +9,13 @@
     <h1>Добро пожаловать в Design.pro!</h1>
     <p>Студия по созданию и оформлению интерьеров.</p>
 
-    {% if user.is_authenticated %}
+
         <h2>Количество заявок в работе: {{ in_progress_count }}</h2>
 
         {% if completed_apps %}
             {% for app in completed_apps %}
                 <h3>{{ app.title }}</h3>
-                <p><strong>Статус:</strong> {{ app.status }}</p>  <!-- Для проверки -->
+                <p><strong>Статус:</strong> {{ app.status }}</p>
                 <p><strong>Категория:</strong> {{ app.category }}</p>
                 {% if app.photo %}
                     <img src="{{ app.photo.url }}" alt="Фото помещения" width="200">
@@ -24,5 +24,5 @@
         {% else %}
             <p>Пока нет выполненных заявок.</p>
         {% endif %}
-    {% endif %}
+
 {% endblock %}

@@ -1,84 +1,103 @@
-{% extends 'main/base.html' %}
+{% extends "main/base.html" %}
+
+{% load static %}
 
 {% block title %}Заявки - Design.pro (Админка){% endblock %}
 
 {% block content %}
     <div class="container">
         <div class="main-content">
-            <h2>📌 Все заявки (Админ)</h2>
-            <a href="{% url 'home' %}" class="btn-create">Главная</a>
+            <h2>📌 Все заявки</h2>
 
-            <!-- Форма фильтрации -->
-            <div class="filters">
-                <form method="get" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-                    <div>
-                        <label for="status-filter">Фильтр по статусу:</label>
-                        <select name="status" id="status-filter">
-                            <option value="">Все статусы</option>
-                            <option value="Новая" {% if request.GET.status == 'Новая' %}selected{% endif %}>Новая</option>
-                            <option value="Принято в работе" {% if request.GET.status == 'Принято в работе' %}selected{% endif %}>Принято в работу</option>
-                            <option value="Выполнено" {% if request.GET.status == 'Выполнено' %}selected{% endif %}>Выполнено</option>
-                        </select>
+
+            <form method="post" action="{% url 'admin_applications' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>Изменить статус заявки</h5>
                     </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="application_id" class="form-label">Выберите заявку:</label>
+                                <select name="application_id" class="form-select" id="application_id" required>
+                                    <option value="">— Выберите заявку —</option>
+                                    {% for app in applications %}
+                                        <option value="{{ app.id }}">
+                                            {{ app.title }} (ID: {{ app.id }}, Статус: {{ app.get_status_display }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
 
-                    <div>
-                        <label for="user-filter">Фильтр по пользователю:</label>
-                        <input type="text" name="username" id="user-filter" placeholder="Имя пользователя" value="{{ request.GET.username }}">
+                            <div class="col-md-3">
+                                <label for="new_status" class="form-label">Новый статус:</label>
+                                <select name="new_status" class="form-select" id="new_status" required>
+                                    <option value="">— Выберите статус —</option>
+                                    <option value="in_progress">Принято в работу</option>
+                                    <option value="completed">Выполнено</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="comment" class="form-label">Комментарий (для "Принято в работу"):</label>
+                                <input type="text" name="comment" class="form-control" id="comment" placeholder="Введите комментарий">
+                            </div>
+
+                            <div class="col-md-2">
+                                <label for="design_image" class="form-label">Изображение дизайна (для "Выполнено"):</label>
+                                <input type="file" name="design_image" class="form-control" id="design_image" accept="image/*">
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">Обновить статус</button>
+                        </div>
                     </div>
+                </div>
+            </form>
 
-                    <button type="submit">Применить</button>
-                    <a href="{% url 'admin_applications' %}" style="margin-left: 10px;">Сбросить</a>
-                </form>
-            </div>
+            <hr>
 
+            <h4>Список всех заявок</h4>
             {% if applications %}
                 <div class="applications-list">
                     {% for app in applications %}
-                        <div class="application-card">
-                            <div class="card-header">
-                                <span class="status-badge status-{{ app.status|slugify }}">
-                                    {{ app.status }}
-                                </span>
-                                <span class="timestamp">{{ app.created_at|date:"d.m.Y H:i" }}</span>
-                            </div>
+                        <div class="application-card card mb-3">
                             <div class="card-body">
-                                <h3>{{ app.title }}</h3>
-                                <p>{{ app.description|truncatewords:20 }}</p>
-                                <p><strong>Категория:</strong> {{ app.category }}</p>
-                                <p><strong>Пользователь:</strong> {{ app.user.username }}</p>
+                                <h5 class="card-title">{{ app.title }}</h5>
+                                <p class="card-text">
+                                    <strong>Статус:</strong> {{ app.get_status_display }}<br>
+                                    <strong>Категория:</strong> {{ app.category }}<br>
+                                    <strong>Пользователь:</strong> {{ app.user.username }}<br>
+                                    <strong>Дата:</strong> {{ app.created_at|date:"d.m.Y H:i" }}
+                                </p>
+
                                 {% if app.photo %}
-                                    <div class="photo-container">
+                                    <div class="mb-2">
+                                        <strong>Фото помещения:</strong><br>
                                         <img src="{{ app.photo.url }}" alt="Фото помещения" width="200">
                                     </div>
                                 {% endif %}
+
                                 {% if app.design_image %}
-                                    <div class="photo-container">
+                                    <div class="mb-2">
+                                        <strong>Дизайн (выполнен):</strong><br>
                                         <img src="{{ app.design_image.url }}" alt="Дизайн" width="200">
                                     </div>
                                 {% endif %}
-                            </div>
-                            <div class="card-footer">
-                                <!-- Форма для изменения статуса -->
-                                <form method="post" action="{% url 'update_application_status' app.pk %}">
-                                    {% csrf_token %}
-                                    <select name="status" required>
-                                        <option value="">Выберите статус</option>
-                                        <option value="Новая" {% if app.status == 'Новая' %}selected{% endif %}>Новая</option>
-                                        <option value="Принято в работу" {% if app.status == 'Принято в работе' %}selected{% endif %}>Принято в работу</option>
-                                        <option value="Выполнено" {% if app.status == 'Выполнено' %}selected{% endif %}>Выполнено</option>
-                                    </select>
-                                    <input type="text" name="comment" placeholder="Комментарий" value="{{ app.comment }}" {% if app.status != 'Новая' %}readonly{% endif %}>
-                                    <button type="submit">Обновить статус</button>
-                                </form>
+
+                                {% if app.comment %}
+                                    <div class="bg-light p-2 rounded">
+                                        <strong>Комментарий:</strong> {{ app.comment }}
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="no-applications">
-                    <p>Нет заявок.</p>
-                    <a href="{% url 'home' %}" class="btn-create">Главная</a>
-                </div>
+                <div class="alert alert-info">Нет заявок.</div>
             {% endif %}
         </div>
     </div>

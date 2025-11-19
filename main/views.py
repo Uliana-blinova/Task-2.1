@@ -9,16 +9,14 @@ from django.contrib.auth.decorators import user_passes_test
 
 
 def home(request):
-    # Получаем последние 4 заявки со статусом "Выполнено"
-    completed_apps = Application.objects.filter(status='Выполнено').order_by('-created_at')[:4]
-
-    # Считаем количество заявок со статусом "Принято в работу"
+    completed_apps = Application.objects.filter(status='completed').order_by('-created_at')[:4]
     in_progress_count = Application.objects.filter(status='Принято в работу').count()
 
     return render(request, 'main/home.html', {
         'completed_apps': completed_apps,
         'in_progress_count': in_progress_count
     })
+
 
 def register(request):
     if request.method == 'POST':
@@ -57,11 +55,9 @@ def create_application(request):
 
 
 @login_required
-@login_required
 def my_applications(request):
     selected_status = request.GET.get('status')
 
-    # Отладочный вывод
     print(f"[DEBUG] selected_status = '{selected_status}'")
 
     apps = Application.objects.filter(user=request.user)
@@ -75,7 +71,6 @@ def my_applications(request):
     is_in_progress_selected = selected_status == 'Принято в работе'
     is_completed_selected = selected_status == 'Выполнено'
 
-    # Отладочный вывод
     print(f"[DEBUG] is_new_selected = {is_new_selected}")
     print(f"[DEBUG] is_in_progress_selected = {is_in_progress_selected}")
     print(f"[DEBUG] is_completed_selected = {is_completed_selected}")
@@ -114,77 +109,66 @@ def is_superuser(u):
     return u.is_superuser
 
 @user_passes_test(is_superuser)
-@user_passes_test(is_superuser)
 def admin_applications(request):
-    # Получаем параметры фильтра
-    selected_status = request.GET.get('status')
-    username_filter = request.GET.get('username')
-
-    # Начинаем с всех заявок
-    apps = Application.objects.all()
-
-    # Фильтруем по статусу
-    if selected_status:
-        apps = apps.filter(status=selected_status)
-
-    # Фильтруем по пользователю
-    if username_filter:
-        apps = apps.filter(user__username__icontains=username_filter)
-
-    apps = apps.order_by('-created_at')
-
-    return render(request, 'main/admin_applications.html', {
-        'applications': apps,
-        'selected_status': selected_status,
-        'username_filter': username_filter,
-    })
-@user_passes_test(is_superuser)
-def admin_categories(request):
-    # Показать все категории
-    categories = Category.objects.all()
-    return render(request, 'main/admin_categories.html', {'categories': categories})
-@user_passes_test(is_superuser)
-def update_application_status(request, pk):
-    app = get_object_or_404(Application, pk=pk)
+    apps = Application.objects.all().order_by('-created_at')
 
     if request.method == 'POST':
-        new_status = request.POST.get('status')
-        comment = request.POST.get('comment')
+        app_id = request.POST.get('application_id')
+        new_status = request.POST.get('new_status')
 
-        # Убираем проверку на "Новая" — разрешаем менять статус всегда
-        # if app.status != 'Новая':
-        #     messages.error(request, 'Нельзя изменить статус, если заявка уже не "Новая".')
-        #     return redirect('admin_applications')
+        app = get_object_or_404(Application, pk=app_id)
 
-        # Проверки для новых статусов
-        if new_status == 'Выполнено' and not request.FILES.get('design_image'):
-            messages.error(request, 'Для статуса "Выполнено" обязательно прикрепить изображение дизайна.')
-        elif new_status == 'Принято в работу' and not comment:
-            messages.error(request, 'Для статуса "Принято в работу" обязательно указать комментарий.')
-        else:
-            # Если всё ок — обновляем
-            app.status = new_status
-            app.comment = comment
-            if request.FILES.get('design_image'):
+        if app.status != 'Новая':
+            messages.error(request, 'Нельзя изменить статус, если заявка уже не "Новая".')
+        elif new_status == 'completed':
+            if not request.FILES.get('design_image'):
+                messages.error(request, 'Для статуса "Выполнено" обязательно прикрепить изображение дизайна.')
+            else:
+                app.status = 'Выполнено'
                 app.design_image = request.FILES['design_image']
-            app.save()
-            messages.success(request, 'Статус заявки успешно обновлен.')
+                app.save()
+                messages.success(request, 'Статус заявки успешно изменён на "Выполнено".')
+        elif new_status == 'in_progress':
+            comment = request.POST.get('comment')
+            if not comment:
+                messages.error(request, 'Для статуса "Принято в работу" обязательно указать комментарий.')
+            else:
+                app.status = 'Принято в работу'
+                app.comment = comment
+                app.save()
+                messages.success(request, 'Статус заявки успешно изменён на "Принято в работу".')
+        else:
+            messages.error(request, 'Некорректный статус.')
 
-    return redirect('admin_applications')
+        apps = Application.objects.all().order_by('-created_at')
+
+    for app in apps:
+        app.is_new = app.status == 'Новая'
+        app.is_in_progress = app.status == 'Принято в работе'
+        app.is_completed = app.status == 'Выполнено'
+
+    return render(request, 'main/admin_applications.html', {'applications': apps})
 @user_passes_test(is_superuser)
-def add_category(request):
+def admin_categories(request):
+    categories = Category.objects.all()
+    return render(request, 'main/admin_categories.html', {'categories': categories})
+
+@user_passes_test(is_superuser)
+def create_category(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         if name:
-            Category.objects.get_or_create(name=name.strip())
-            messages.success(request, f'Категория "{name}" добавлена.')
-        return redirect('admin_categories')
+            Category.objects.create(name=name)
+            messages.success(request, 'Категория успешно создана.')
+        else:
+            messages.error(request, 'Название категории не может быть пустым.')
     return redirect('admin_categories')
 
-# Удалить категорию
 @user_passes_test(is_superuser)
 def delete_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
-    category.delete()  # Все заявки с этой категорией удалятся автоматически (CASCADE)
-    messages.success(request, f'Категория "{category.name}" и связанные заявки удалены.')
+    if request.method == 'POST':
+        Application.objects.filter(category=category).delete()
+        category.delete()
+        messages.success(request, 'Категория и все её заявки успешно удалены.')
     return redirect('admin_categories')
